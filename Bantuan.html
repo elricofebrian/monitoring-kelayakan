@@ -1,0 +1,838 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Pendataan Warga — Padukuhan (All-in-1)</title>
+<style>
+:root{
+  --bg:#05060a; --card:#071026; --muted:#9aa7b2; --accent:#00d4ff; --primary:#5eead4;
+  --glass: rgba(255,255,255,0.02); --radius:12px; --shadow: 0 12px 40px rgba(0,0,0,0.6);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  color: #e6f7ff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:linear-gradient(180deg,#020412 0%,var(--bg) 100%);font-size:15px}
+.app{min-height:100vh;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 18px;border-bottom:1px solid rgba(255,255,255,0.02)}
+.brand{display:flex;gap:12px;align-items:center}
+.logo-mark{width:48px;height:48px;border-radius:10px;background:linear-gradient(135deg,#0ea5ff,#7c3aed);display:flex;align-items:center;justify-content:center;font-weight:800;color:#021024}
+.title{font-weight:800}
+.subtitle{font-size:12px;color:var(--muted)}
+.top-actions{display:flex;gap:10px;align-items:center}
+.container{max-width:1100px;margin:18px auto;padding:14px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);border:1px solid rgba(255,255,255,0.02)}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:880px){.grid-3,.grid-2{grid-template-columns:1fr}}
+.input, textarea, select{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,0.03);background:transparent;color:inherit}
+.label{font-weight:700;margin-bottom:6px;display:block}
+.btn{background:linear-gradient(90deg,#06b6d4,#0ea5ff);color:#021024;padding:10px 12px;border-radius:10px;border:0;cursor:pointer;font-weight:800}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid rgba(14,165,255,0.12)}
+.form-section{margin-top:12px}
+.form-actions{display:flex;gap:10px;align-items:center;margin-top:12px}
+.small{font-size:13px}
+.log{max-height:280px;overflow:auto;border-radius:10px;padding:8px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.0));border:1px dashed rgba(255,255,255,0.02)}
+.select-inline{min-width:160px}
+.kpi{font-weight:900;font-size:18px}
+.stat-card{padding:12px;border-radius:10px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.0));}
+.footer{padding:12px;text-align:center;color:var(--muted);font-size:13px}
+.screen{display:none}
+.screen.active{display:block}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,0.03);font-weight:700;color:var(--accent)}
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.02)}100%{transform:scale(1)}}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:8px;border-bottom:1px solid rgba(255,255,255,0.03);text-align:left}
+.note{font-size:13px;color:var(--muted)}
+.center{display:flex;align-items:center;justify-content:center}
+.tag-critical{background:#ff3b3b;color:white;padding:6px 8px;border-radius:8px}
+.tag-high{background:#ff8c42;color:#021024;padding:6px 8px;border-radius:8px}
+.tag-medium{background:#ffd166;color:#021024;padding:6px 8px;border-radius:8px}
+.tag-low{background:#6ee7b7;color:#021024;padding:6px 8px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo-mark">P</div>
+      <div>
+        <div class="title">Pendataan & Monitoring — Padukuhan</div>
+        <div class="subtitle">Realtime · Update tiap 14 hari · Untuk pihak berwenang</div>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <select id="navSelect" class="input" style="min-width:160px">
+        <option value="home">Beranda</option>
+        <option value="survey">Isi Survei</option>
+        <option value="my">Dashboard Saya</option>
+        <option value="monitor">Monitoring</option>
+        <option value="admin">Admin</option>
+        <option value="help">Panduan</option>
+      </select>
+      <div id="authArea" class="note"></div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- HOME -->
+    <section id="home" class="screen active card">
+      <h2>Selamat datang</h2>
+      <p class="note">Isi survei berkala tiap 14 hari. Hasil analisis otomatis akan tersimpan dan dapat dimonitor oleh RT/Kelurahan (akun berwenang).</p>
+      <div style="height:10px"></div>
+      <div class="grid-3">
+        <div class="stat-card card"><div class="small">Total Terdatat</div><div id="statTotal" class="kpi">-</div></div>
+        <div class="stat-card card"><div class="small">Flagged / Critical</div><div id="statCritical" class="kpi">-</div></div>
+        <div class="stat-card card"><div class="small">Perlu Verifikasi</div><div id="statVerify" class="kpi">-</div></div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="flex:1"><strong>Panduan singkat</strong>
+            <div class="note">Pastikan data jujur. Update minimal 14 hari sekali. Hasil laporan otomatis berisi skor & alasan ringkas. Hanya admin yang berwenang dapat melihat data detail.</div>
+          </div>
+          <div><button class="btn" onclick="nav('survey')">Isi Survei Sekarang</button></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SURVEY -->
+    <section id="survey" class="screen card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h3>Form Survei Interaktif</h3>
+        <div class="note">Wajib diperbarui tiap 14 hari. Data langsung tersimpan (Realtime DB).</div>
+      </div>
+
+      <form id="surveyForm">
+        <div class="grid-3">
+          <div>
+            <label class="label">Nama lengkap</label>
+            <input id="name" class="input" required />
+          </div>
+          <div>
+            <label class="label">NIK (opsional)</label>
+            <input id="nik" class="input" />
+          </div>
+          <div>
+            <label class="label">No HP</label>
+            <input id="phone" class="input" placeholder="+628..." />
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label class="label">Alamat lengkap</label>
+          <input id="address" class="input" />
+        </div>
+
+        <div class="grid-3">
+          <div>
+            <label class="label">RT</label>
+            <select id="rt" class="input">
+              <option value="">Pilih RT</option>
+              <option>RT 01</option><option>RT 02</option><option>RT 03</option><option>RT 04</option>
+              <option>RT 05</option><option>RT 06</option><option>RT 07</option><option>RT 08</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Jumlah Anggota Keluarga</label>
+            <input id="household" class="input" type="number" min="1" value="1" />
+          </div>
+          <div>
+            <label class="label">Usia (pemohon)</label>
+            <input id="age" class="input" type="number" min="0" />
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label class="label">Pekerjaan (pilih kategori → sub → spesifik)</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <select id="job1" class="input select-inline"></select>
+            <select id="job2" class="input select-inline"></select>
+            <select id="job3" class="input select-inline"></select>
+            <input id="jobCustom" class="input" placeholder="Jika Lainnya, tulis singkat..." />
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div>
+            <label class="label">Pendapatan 2 minggu (estimasi)</label>
+            <select id="income" class="input">
+              <option value="">-- pilih --</option>
+              <option value="0">0</option>
+              <option value="1-200">1 - 200rb</option>
+              <option value="200-500">200 - 500rb</option>
+              <option value="500-1000">500rb - 1jt</option>
+              <option value="1000-2000">1jt - 2jt</option>
+              <option value="2000-5000">2jt - 5jt</option>
+              <option value=">5000">&gt;5jt</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">Status pekerjaan</label>
+            <select id="empStatus" class="input">
+              <option value="">-- pilih --</option>
+              <option value="tetap">Tetap</option>
+              <option value="kontrak">Kontrak</option>
+              <option value="harian">Harian / Lepas</option>
+              <option value="musiman">Musiman</option>
+              <option value="tidak">Tidak bekerja</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="label">Kondisi rumah</label>
+            <select id="houseType" class="input">
+              <option value="">-- pilih --</option>
+              <option value="permanen">Permanen (beton/bata)</option>
+              <option value="semi">Semi permanen</option>
+              <option value="gedhek">Gedhek / Bambu</option>
+              <option value="tidak_layak">Tidak layak huni</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label class="label">Kesehatan & Kerentanan</label>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <label><input type="checkbox" id="flag_lansia" /> Lansia</label>
+            <label><input type="checkbox" id="flag_disabilitas" /> Difabel</label>
+            <label><input type="checkbox" id="flag_chronic" /> Penyakit kronis</label>
+            <label><input type="checkbox" id="flag_pregnant" /> Ibu hamil</label>
+            <label><input type="checkbox" id="flag_schooldrop" /> Anak putus sekolah</label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label class="label">Bantuan Pemerintah yang dimiliki (centang bila punya)</label>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <label><input type="checkbox" id="has_pkh" /> PKH</label>
+            <label><input type="checkbox" id="has_bpnt" /> BPNT</label>
+            <label><input type="checkbox" id="has_pip" /> PIP</label>
+            <label><input type="checkbox" id="has_kis" /> KIS</label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label class="label">Aset produktif (centang bila ada)</label>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <label><input type="checkbox" id="asset_land" /> Lahan</label>
+            <label><input type="checkbox" id="asset_livestock" /> Ternak</label>
+            <label><input type="checkbox" id="asset_shop" /> Toko/usaha</label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label class="label">Kejadian mendadak terakhir</label>
+          <div style="display:flex;gap:12px;flex-wrap:wrap">
+            <label><input type="checkbox" id="shock_lostjob" /> Kehilangan pekerjaan</label>
+            <label><input type="checkbox" id="shock_disaster" /> Terkena bencana / rusak rumah</label>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <label class="label">Catatan singkat (opsional)</label>
+          <textarea id="notes" class="input" rows="3"></textarea>
+        </div>
+
+        <div class="form-actions">
+          <button id="btnSubmit" class="btn">Kirim Survei (Simpan & Analisa)</button>
+          <div style="margin-left:auto" class="note">Pastikan sudah login. Jika belum, lakukan Login di pojok kanan atas.</div>
+        </div>
+      </form>
+
+      <div id="submitResult" class="note" style="margin-top:12px"></div>
+    </section>
+
+    <!-- MY DASHBOARD -->
+    <section id="my" class="screen card">
+      <h3>Dashboard Saya</h3>
+      <div class="card small">
+        <div class="note">Ringkasan laporan terakhir</div>
+        <div id="myReport">Belum submit</div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="card">
+        <div class="form-title">Riwayat Terbaru</div>
+        <div id="myHistory" class="log small">Belum ada riwayat</div>
+      </div>
+    </section>
+
+    <!-- MONITOR -->
+    <section id="monitor" class="screen card">
+      <h3>Monitoring Realtime (Ringkas)</h3>
+      <div class="grid-3">
+        <div class="stat-card card"><div class="small">Total Terdatat</div><div id="totalCount" class="kpi">0</div></div>
+        <div class="stat-card card"><div class="small">Critical</div><div id="criticalCount" class="kpi">0</div></div>
+        <div class="stat-card card"><div class="small">High</div><div id="highCount" class="kpi">0</div></div>
+      </div>
+      <div style="height:12px"></div>
+      <div class="card">
+        <div class="form-title">Latest Reports (ringkasan)</div>
+        <div id="latestList" class="log small">Memuat...</div>
+      </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="admin" class="screen card">
+      <h3>Admin Panel</h3>
+      <div class="note">Hanya akun yang ditandai di <code>meta/admins/{uid}: true</code> yang dapat melihat & memverifikasi.</div>
+      <div style="height:12px"></div>
+
+      <div style="display:flex;gap:12px">
+        <div style="flex:1">
+          <div class="form-title">Tabel Laporan Terakhir</div>
+          <div id="adminTable" class="log small">Belum ada data</div>
+        </div>
+        <div style="width:320px">
+          <div class="form-title">Aksi Cepat</div>
+          <button id="btnExport" class="btn">Export CSV (latestReports)</button>
+          <div style="height:8px"></div>
+          <button id="btnRefresh" class="btn ghost">Refresh Data</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HELP -->
+    <section id="help" class="screen card">
+      <h3>Panduan & Catatan</h3>
+      <ol class="note">
+        <li>Paste firebaseConfig di bagian JS (lihat instruksi dalam file) — jangan bagikan config ke publik.</li>
+        <li>Login dengan akun email untuk mengisi survei. Admin harus ditandai oleh kelurahan di path <code>meta/admins/{uid}: true</code>.</li>
+        <li>Setiap submit memicu komputasi laporan otomatis dan disimpan di <code>/reports/{uid}/{ts}</code> &amp; ringkasan di <code>/latestReports</code>.</li>
+        <li>Update minimal 14 hari (client guard). Admin dapat melakukan verifikasi manual.</li>
+      </ol>
+    </section>
+
+  </main>
+
+  <footer class="footer">© Padukuhan — Data hanya untuk pihak berwenang</footer>
+
+</div>
+
+<!-- SCRIPT: modular firebase imports and app logic -->
+<script type="module">
+/* =========================
+   PENTING: Paste firebaseConfig kamu di tempat yang ditandai:
+   // <<< PASTE FIREBASE CONFIG HERE >>>
+   Jangan upload file ini dengan config ke repo publik.
+   ========================= */
+
+// modular imports from CDN
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set, push, get, child, onValue, query, orderByKey, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+// <<< PASTE FIREBASE CONFIG HERE >>>
+const firebaseConfig = {
+  // EXAMPLE:
+  // apiKey: "AIzaSy....",
+  // authDomain: "project-id.firebaseapp.com",
+  // databaseURL: "https://project-id-default-rtdb.asia-southeast1.firebasedatabase.app",
+  // projectId: "project-id",
+  // storageBucket: "project-id.appspot.com",
+  // messagingSenderId: "1234567890",
+  // appId: "1:1234567890:web:abcdef123456"
+};
+
+// Initialize Firebase (will warn if config missing)
+let app=null, auth=null, db=null;
+if(firebaseConfig && firebaseConfig.apiKey){
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  db = getDatabase(app);
+  console.info('Firebase initialized.');
+} else {
+  console.warn('Firebase config not found. Paste your firebaseConfig into the marked section in this file.');
+}
+
+/* ---------------------------
+   Utility DOM + Navigation
+   --------------------------- */
+const screens = ['home','survey','my','monitor','admin','help'];
+const navSelect = document.getElementById('navSelect');
+navSelect.addEventListener('change', ()=> nav(navSelect.value));
+function nav(name){
+  if(!screens.includes(name)) name='home';
+  screens.forEach(s => document.getElementById(s).classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  navSelect.value = name;
+}
+window.nav = nav;
+
+/* ---------------------------
+   Taxonomy (Indonesia-focused sample)
+   Expandable: you can add more children objects.
+   --------------------------- */
+const taxonomy = [
+  { id:'pertanian', label:'Pertanian', children:[
+      {id:'padi',label:'Petani Padi'}, {id:'horti',label:'Petani Sayur'}, {id:'buah',label:'Petani Buah'}, {id:'hidro',label:'Hidroponik'}
+  ]},
+  { id:'peternakan', label:'Peternakan', children:[
+      {id:'ayam',label:'Ayam Petelur'}, {id:'sapi',label:'Sapi'}, {id:'kambing',label:'Kambing'}
+  ]},
+  { id:'umkm', label:'UMKM', children:[
+      {id:'kuliner',label:'Kuliner'}, {id:'kerajinan',label:'Kerajinan'}, {id:'briket',label:'Briket Batok Kelapa'}
+  ]},
+  { id:'jasa', label:'Jasa', children:[
+      {id:'tukang',label:'Tukang / Servis'}, {id:'laundry',label:'Laundry'}, {id:'transport',label:'Driver / Kurir'}
+  ]},
+  { id:'digital', label:'Digital & Kreatif', children:[
+      {id:'dev',label:'Developer'}, {id:'content',label:'Content Creator'}, {id:'trader',label:'Trader / Investor'}
+  ]},
+  { id:'lainnya', label:'Lainnya', children:[
+      {id:'pns',label:'ASN / PNS'}, {id:'guru',label:'Guru'}, {id:'nelayan',label:'Nelayan'}
+  ]}
+];
+function populateJobSelects(){
+  const j1 = document.getElementById('job1'), j2 = document.getElementById('job2'), j3 = document.getElementById('job3');
+  j1.innerHTML = '<option value="">-- Pilih kategori --</option>';
+  taxonomy.forEach(t => j1.appendChild(new Option(t.label,t.id)));
+  j2.innerHTML = '<option value="">-- Pilih sub --</option>';
+  j3.innerHTML = '<option value="">-- Pilih spesifik --</option>';
+  j1.onchange = () => {
+    j2.innerHTML = '<option value="">-- Pilih sub --</option>'; j3.innerHTML = '<option value="">-- Pilih spesifik --</option>';
+    const sel = taxonomy.find(x=>x.id===j1.value);
+    if(sel && sel.children) sel.children.forEach(c => j2.appendChild(new Option(c.label,c.id)));
+  };
+  j2.onchange = () => {
+    j3.innerHTML = '<option value="">-- Pilih spesifik --</option>';
+    const sel = taxonomy.find(x=>x.id===j1.value);
+    if(!sel) return;
+    const sub = sel.children.find(x=>x.id===j2.value);
+    if(sub){
+      [['small','(rumah-tangga)'],['smallbiz','(kecil)'],['commercial','(komersial)']].forEach(v=>{
+        j3.appendChild(new Option(sub.label+' '+v[1], sub.id+'_'+v[0]));
+      });
+    }
+  };
+}
+populateJobSelects();
+
+/* ---------------------------
+   Auth UI & Handlers
+   --------------------------- */
+const authArea = document.getElementById('authArea');
+function renderAuth(userProfile){
+  if(!userProfile){
+    authArea.innerHTML = `<button class="btn ghost" id="btnShowLogin">Login</button>`;
+    document.getElementById('btnShowLogin').onclick = showLoginModal;
+  } else {
+    authArea.innerHTML = `<div class="note">Hai, <strong>${userProfile.name || userProfile.email}</strong> &nbsp; <button class="btn ghost" id="btnSignOut">Logout</button></div>`;
+    document.getElementById('btnSignOut').onclick = async ()=> {
+      if(!auth) return alert('Auth belum aktif.');
+      await signOut(auth);
+    };
+  }
+}
+renderAuth(null);
+
+// small modal login (simple)
+function showLoginModal(){
+  const email = prompt('Masukkan email (untuk login/registrasi):');
+  if(!email) return;
+  const pw = prompt('Masukkan password (min 6):');
+  if(!pw) return;
+  if(!auth) return alert('Auth belum diinisialisasi - paste firebaseConfig.');
+  // try sign in, if fail -> offer register
+  signInWithEmailAndPassword(auth, email, pw).then(()=> {
+    alert('Login berhasil.');
+  }).catch(async (err)=>{
+    if(confirm('Login gagal. Daftar baru dengan email ini?')){
+      try{
+        await createUserWithEmailAndPassword(auth, email, pw);
+        alert('Registrasi berhasil. Hubungi RT untuk verifikasi admin jika perlu.');
+      }catch(e){ alert('Gagal registrasi: '+e.message); }
+    } else {
+      alert('Batal login.');
+    }
+  });
+}
+
+// Listen auth changes
+if(auth){
+  onAuthStateChanged(auth, async (u)=>{
+    if(u){
+      const profile = await getProfile(u.uid);
+      renderAuth(profile || {email:u.email, name:u.email});
+      // auto route to survey after login
+      nav('survey');
+      // load my summary
+      loadMySummary(u.uid);
+    } else {
+      renderAuth(null);
+    }
+  });
+}
+
+/* ---------------------------
+   DB helpers
+   --------------------------- */
+async function getProfile(uid){
+  if(!db) return null;
+  const snap = await get(ref(db, 'users/'+uid));
+  return snap.exists()? snap.val() : null;
+}
+async function setProfile(uid, profile){
+  if(!db) throw new Error('DB not initialized');
+  await set(ref(db, 'users/'+uid), {...profile, createdAt: Date.now()});
+}
+async function submitSurvey(uid, ts, payload){
+  if(!db) throw new Error('DB not initialized');
+  await set(ref(db, `submissions/${uid}/${ts}`), payload);
+  await set(ref(db, `latest/${uid}`), { meta:{uid,ts}, quick:{name: payload.identity.name, rt: payload.rt || ''} });
+  const report = computeReport(payload);
+  await set(ref(db, `reports/${uid}/${ts}`), report);
+  await set(ref(db, `latestReports/${uid}`), { lastReportTs: ts, score: report.score, band: report.band, generatedAt: report.generatedAt, name: payload.identity.name || '' });
+  await push(ref(db, 'activity'), {action:'submit', uid, ts: Date.now()});
+  return report;
+}
+async function getLastSubmissionTs(uid){
+  if(!db) return null;
+  const q = query(ref(db, `submissions/${uid}`), orderByKey(), limitToLast(1));
+  const snap = await get(q);
+  let last=null;
+  snap.forEach(ch => last = Number(ch.key));
+  return last;
+}
+
+/* ---------------------------
+   computeReport(payload)
+   (full function as designed earlier)
+   --------------------------- */
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function computeReport(payload){
+  const p = payload || {};
+  const income = (p.income || '').toString();
+  const emp = (p.emp_status || '').toString();
+  const hh = Number(p.household || 1);
+  const house = (p.house || '').toString();
+  const flags = p.flags || {};
+  const benefits = p.benefits || {};
+  const assets = p.assets || {};
+  const recent = p.recentShock || {};
+
+  let incLevel = 0;
+  if(income === '0') incLevel = 5;
+  else if(income === '1-200') incLevel = 4;
+  else if(income === '200-500') incLevel = 3;
+  else if(income === '500-1000') incLevel = 2;
+  else if(income === '1000-2000') incLevel = 1;
+  else if(income === '2000-5000') incLevel = 0.7;
+  else if(income === '>5000') incLevel = 0.2;
+  else incLevel = 2;
+
+  let houseV = 0;
+  if(house === 'tidak_layak') houseV = 1.0;
+  else if(house === 'gedhek') houseV = 0.75;
+  else if(house === 'semi') houseV = 0.4;
+  else if(house === 'permanen') houseV = 0.1;
+  else houseV = 0.3;
+
+  let healthCount = 0;
+  if(flags.lansia) healthCount++;
+  if(flags.disabilitas) healthCount++;
+  if(flags.chronic) healthCount++;
+  if(flags.pregnant) healthCount++;
+  if(flags.schooldrop) healthCount++;
+  const healthV = clamp(healthCount / 3, 0, 1);
+
+  const benCount = ['pkh','bpnt','pip','kis'].reduce((s,k)=> s + (benefits[k]?1:0), 0);
+  const assetCount = (assets.land?1:0) + (assets.livestock?1:0) + (assets.shop?1:0);
+
+  let empV = 0;
+  if(emp === 'tidak' || emp === '') empV = 1.0;
+  else if(emp === 'harian' || emp === 'musiman') empV = 0.85;
+  else if(emp === 'kontrak') empV = 0.5;
+  else if(emp === 'tetap') empV = 0.15;
+  else empV = 0.6;
+
+  let shockV = 0;
+  if(recent.lostJob) shockV += 0.6;
+  if(recent.disaster) shockV += 0.8;
+  shockV = clamp(shockV, 0, 1.2);
+
+  const hhFactor = clamp(Math.log2(Math.max(1, hh)) / 4, 0, 1);
+
+  const W = { income:28, house:15, health:18, benefits:-10, household:12, emp:10, assets:-8, shock:9 };
+
+  const incomeV = clamp(incLevel / 5, 0, 1);
+  const benScore = clamp(benCount / 4, 0, 1);
+  const assetScore = clamp(assetCount / 3, 0, 1);
+  const shockScore = clamp(shockV, 0, 1);
+
+  let weightedSum = 0;
+  weightedSum += W.income * incomeV;
+  weightedSum += W.house * houseV;
+  weightedSum += W.health * healthV;
+  weightedSum += W.household * hhFactor;
+  weightedSum += W.emp * empV;
+  weightedSum += W.shock * shockScore;
+  weightedSum += W.benefits * benScore;
+  weightedSum += W.assets * assetScore;
+
+  const minPossible = -18;
+  const maxPossible = 92;
+  let rawScore = (weightedSum - minPossible) / (maxPossible - minPossible) * 100;
+  rawScore = clamp(rawScore, 0, 100);
+  const score = Math.round(rawScore * 10) / 10;
+
+  let band = 'Low';
+  if(score >= 70) band = 'Critical';
+  else if(score >= 55) band = 'High';
+  else if(score >= 35) band = 'Medium';
+  else band = 'Low';
+
+  const factors = [
+    { id:'income', label:'Pendapatan (2 minggu)', value: incomeV, weight: W.income, contribution: Math.round(W.income * incomeV * 10)/10 },
+    { id:'house', label:'Kondisi rumah', value: houseV, weight: W.house, contribution: Math.round(W.house * houseV * 10)/10 },
+    { id:'health', label:'Kesehatan / Kerentanan', value: healthV, weight: W.health, contribution: Math.round(W.health * healthV * 10)/10 },
+    { id:'household', label:'Jumlah anggota keluarga', value: hhFactor, weight: W.household, contribution: Math.round(W.household * hhFactor * 10)/10 },
+    { id:'emp', label:'Stabilitas pekerjaan', value: empV, weight: W.emp, contribution: Math.round(W.emp * empV * 10)/10 },
+    { id:'shock', label:'Kejadian mendadak', value: shockScore, weight: W.shock, contribution: Math.round(W.shock * shockScore * 10)/10 },
+    { id:'benefits', label:'Bantuan (mengurangi skor)', value: benScore, weight: W.benefits, contribution: Math.round(W.benefits * benScore * 10)/10 },
+    { id:'assets', label:'Aset produktif (mengurangi skor)', value: assetScore, weight: W.assets, contribution: Math.round(W.assets * assetScore * 10)/10 }
+  ];
+
+  const reasons = [];
+  if(incomeV >= 0.8) reasons.push('Pendapatan sangat rendah dalam 2 minggu terakhir.');
+  else if(incomeV >= 0.5) reasons.push('Pendapatan di bawah rata-rata.');
+  else if(incomeV <= 0.2) reasons.push('Pendapatan relatif stabil/tinggi.');
+  if(houseV >= 0.8) reasons.push('Kondisi rumah tidak layak.');
+  else if(houseV >= 0.4) reasons.push('Kondisi rumah semi layak.');
+  if(healthCount > 0) {
+    const list = [];
+    if(flags.lansia) list.push('lansia');
+    if(flags.disabilitas) list.push('difabel');
+    if(flags.chronic) list.push('penyakit kronis');
+    if(flags.pregnant) list.push('ibu hamil');
+    if(flags.schooldrop) list.push('anak putus sekolah');
+    reasons.push('Terdapat kerentanan kesehatan: ' + list.join(', ') + '.');
+  }
+  if(benCount > 0) reasons.push(`Memiliki ${benCount} program bantuan sehingga prioritas dapat dikurangi.`);
+  if(assetCount > 0) reasons.push(`Memiliki ${assetCount} aset produktif yang mengurangi prioritas.`);
+  if(recent.lostJob) reasons.push('Kehilangan pekerjaan baru-baru ini — butuh verifikasi lapangan.');
+  if(recent.disaster) reasons.push('Terkena bencana baru-baru ini.');
+
+  const recommendations = [];
+  if(band === 'Critical'){
+    recommendations.push('Verifikasi lapangan segera (RT/Relawan).');
+    recommendations.push('Prioritaskan paket darurat & rujukan kesehatan.');
+  } else if(band === 'High'){
+    recommendations.push('Jadwalkan verifikasi RT dan pertimbangkan bantuan pangan.');
+    recommendations.push('Cek kelengkapan BPJS / KIS.');
+  } else if(band === 'Medium'){
+    recommendations.push('Pantau pada update 2 minggu berikutnya.');
+    recommendations.push('Berikan informasi akses program pelatihan/UMKM.');
+  } else {
+    recommendations.push('Tidak prioritas saat ini. Pertahankan pemantauan rutin.');
+  }
+
+  return {
+    generatedAt: Date.now(),
+    score, band,
+    shortSummary: `${band} priority — score ${score}/100.`,
+    factors, reasons, recommendations,
+    rawWeightedSum: Math.round(weightedSum*10)/10
+  };
+}
+
+/* ---------------------------
+   Survey submit wiring
+   --------------------------- */
+const surveyForm = document.getElementById('surveyForm');
+const submitResult = document.getElementById('submitResult');
+
+surveyForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if(!auth || !auth.currentUser) return alert('Silakan login terlebih dahulu (klik Login di pojok kanan atas).');
+  if(!db) return alert('Database belum diinisialisasi — paste firebaseConfig.');
+  const uid = auth.currentUser.uid;
+
+  // gather payload
+  const payload = {
+    meta: { uid: uid, ts: Date.now() },
+    identity: { name: document.getElementById('name').value.trim(), nik: document.getElementById('nik').value.trim(), phone: document.getElementById('phone').value.trim() },
+    address: document.getElementById('address').value.trim(),
+    rt: document.getElementById('rt').value,
+    household: Number(document.getElementById('household').value) || 1,
+    age: Number(document.getElementById('age').value) || null,
+    job: { level1: document.getElementById('job1').value || null, level2: document.getElementById('job2').value || null, level3: document.getElementById('job3').value || null, custom: document.getElementById('jobCustom').value.trim() || null },
+    income: document.getElementById('income').value || null,
+    emp_status: document.getElementById('empStatus').value || null,
+    house: document.getElementById('houseType').value || null,
+    flags: { lansia: document.getElementById('flag_lansia').checked, disabilitas: document.getElementById('flag_disabilitas').checked, chronic: document.getElementById('flag_chronic').checked, pregnant: document.getElementById('flag_pregnant').checked, schooldrop: document.getElementById('flag_schooldrop').checked },
+    benefits: { pkh: document.getElementById('has_pkh').checked, bpnt: document.getElementById('has_bpnt').checked, pip: document.getElementById('has_pip').checked, kis: document.getElementById('has_kis').checked },
+    assets: { land: document.getElementById('asset_land').checked, livestock: document.getElementById('asset_livestock').checked, shop: document.getElementById('asset_shop').checked },
+    recentShock: { lostJob: document.getElementById('shock_lostjob').checked, disaster: document.getElementById('shock_disaster').checked },
+    notes: document.getElementById('notes').value.trim()
+  };
+
+  try{
+    const last = await getLastSubmissionTs(uid);
+    if(last && (Date.now() - last < 14*24*60*60*1000)){
+      if(!confirm('Anda sudah submit dalam 14 hari terakhir. Lanjutkan update?')) return;
+    }
+    submitResult.textContent = 'Menyimpan...';
+    const report = await submitSurvey(uid, Date.now(), payload);
+    submitResult.innerHTML = `<strong>Berhasil disimpan.</strong> Skor: <span class="badge">${report.score}</span> — ${report.band}<br><div class="note">${report.reasons.slice(0,3).join(' / ')}</div>`;
+    // update my dashboard
+    loadMySummary(uid);
+    // go to my
+    nav('my');
+  }catch(err){
+    console.error(err);
+    alert('Gagal simpan: '+(err.message||err));
+    submitResult.textContent = 'Gagal menyimpan.';
+  }
+});
+
+/* ---------------------------
+   My summary & history
+   --------------------------- */
+async function loadMySummary(uid){
+  if(!db || !uid) return;
+  const r = await get(child(ref(db), `latestReports/${uid}`));
+  const historyNode = document.getElementById('myHistory');
+  historyNode.innerHTML = 'Memuat...';
+  // fetch history (last 10)
+  const snap = await get(query(ref(db, `submissions/${uid}`), orderByKey(), limitToLast(10)));
+  const arr = [];
+  snap.forEach(ch => arr.push(ch.val()));
+  historyNode.innerHTML = '';
+  if(arr.length===0) historyNode.textContent = 'Belum ada riwayat';
+  else {
+    arr.sort((a,b)=>b.meta.ts - a.meta.ts);
+    arr.forEach(it=>{
+      const el = document.createElement('div'); el.style.padding='8px'; el.style.borderBottom='1px solid rgba(255,255,255,0.03)';
+      el.innerHTML = `<div style="font-weight:700">${it.identity.name || '-'} — ${it.job.level3 || it.job.custom || '-'}</div><div class="note">${new Date(it.meta.ts).toLocaleString()}</div>`;
+      historyNode.appendChild(el);
+    });
+  }
+  if(r.exists()){
+    const data = r.val();
+    document.getElementById('myReport').innerHTML = `<div><strong>Skor:</strong> ${data.score} — <strong>${data.band}</strong></div><div class="note">Terakhir: ${new Date(data.generatedAt).toLocaleString()}</div>`;
+  } else {
+    document.getElementById('myReport').textContent = 'Belum submit';
+  }
+}
+
+/* ---------------------------
+   Monitoring & Admin
+   --------------------------- */
+async function refreshMonitoring(){
+  if(!db) return;
+  const latest = await get(ref(db, 'latestReports'));
+  const listNode = document.getElementById('latestList');
+  listNode.innerHTML = '';
+  const tableNode = document.getElementById('adminTable');
+  tableNode.innerHTML = '';
+  const all = latest.exists()? latest.val() : {};
+  let total = 0, critical = 0, high = 0;
+  const rows = [];
+  Object.keys(all).forEach(uid=>{
+    total++;
+    const v = all[uid];
+    if(v.band === 'Critical') critical++;
+    if(v.band === 'High') high++;
+    rows.push({uid, name:v.name || '-', score: v.score || 0, band: v.band || '-', ts: v.generatedAt || v.generatedAt});
+    // short list
+    const short = document.createElement('div'); short.style.padding='8px'; short.style.borderBottom='1px solid rgba(255,255,255,0.03)';
+    short.innerHTML = `<div style="font-weight:700">${v.name || uid} — ${v.band} (${v.score})</div><div class="note">Updated: ${v.generatedAt? new Date(v.generatedAt).toLocaleString() : '-'}</div>`;
+    listNode.appendChild(short);
+  });
+  document.getElementById('totalCount').textContent = total;
+  document.getElementById('criticalCount').textContent = critical;
+  document.getElementById('highCount').textContent = high;
+
+  if(rows.length===0) tableNode.textContent = 'Belum ada data';
+  else {
+    // create table
+    const tbl = document.createElement('table'); tbl.className='table';
+    const thead = document.createElement('thead'); thead.innerHTML = `<tr><th>Nama</th><th>Skor</th><th>Band</th><th>Aksi</th></tr>`; tbl.appendChild(thead);
+    const tbody = document.createElement('tbody');
+    rows.sort((a,b)=>b.score - a.score);
+    rows.forEach(r=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${r.name}</td><td>${r.score}</td><td>${r.band}</td><td><button class="btn ghost" data-uid="${r.uid}" onclick="viewReport('${r.uid}')">Lihat</button></td>`;
+      tbody.appendChild(tr);
+    });
+    tbl.appendChild(tbody);
+    tableNode.innerHTML = ''; tableNode.appendChild(tbl);
+  }
+}
+window.refreshMonitoring = refreshMonitoring;
+
+/* view full report (admin) */
+window.viewReport = async function(uid){
+  if(!db) return alert('DB belum diinisialisasi.');
+  // show dialog: list reports for uid
+  const snap = await get(ref(db, `reports/${uid}`));
+  if(!snap.exists()) return alert('Tidak ada report untuk user ini.');
+  const data = snap.val();
+  const keys = Object.keys(data).sort((a,b)=>b - a);
+  let msg = `Laporan untuk ${uid}\n\n`;
+  keys.forEach(k=>{
+    const r = data[k];
+    msg += `${new Date(r.generatedAt).toLocaleString()} — Skor: ${r.score} — ${r.band}\nAlasan: ${r.reasons.slice(0,3).join('; ')}\nRekomendasi: ${r.recommendations.join('; ')}\n\n`;
+  });
+  alert(msg);
+};
+
+/* Export CSV */
+document.getElementById('btnExport').addEventListener('click', async ()=>{
+  if(!db) return alert('DB belum inisialisasi');
+  const snap = await get(ref(db, 'latestReports'));
+  const all = snap.exists()? snap.val() : {};
+  const rows = [['uid','name','score','band','generatedAt']];
+  Object.keys(all).forEach(uid=>{
+    const v = all[uid];
+    rows.push([uid, v.name || '', v.score || '', v.band || '', v.generatedAt || '']);
+  });
+  const csv = rows.map(r=> r.map(c=> `"${String(c||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'}); const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'latestReports.csv'; a.click(); URL.revokeObjectURL(url);
+});
+
+/* Refresh button */
+document.getElementById('btnRefresh').addEventListener('click', refreshMonitoring);
+
+/* Auto-refresh realtime every 8s simple */
+setInterval(()=>{ if(document.getElementById('monitor').classList.contains('active')) refreshMonitoring(); }, 8000);
+
+/* On load: if auth available, listen and init */
+(async function init(){
+  if(!db){
+    // show message and stop binding
+    document.getElementById('submitResult').textContent = 'Firebase belum diinisialisasi. Paste firebaseConfig pada bagian yang ditandai di file ini.';
+    return;
+  }
+  // attach auth listener
+  onAuthStateChanged(auth, async (u)=>{
+    if(u){
+      const profile = await getProfile(u.uid);
+      renderAuth(profile || {email:u.email,name:u.email});
+    } else renderAuth(null);
+  });
+
+  // nav select initial
+  nav('home');
+
+  // basic live counters
+  onValue(ref(db, 'latestReports'), snap=>{
+    const all = snap.exists()? snap.val() : {};
+    document.getElementById('statTotal').textContent = Object.keys(all).length;
+  });
+
+  // bind my page load when logged in
+  if(auth) onAuthStateChanged(auth, (u)=>{ if(u) loadMySummary(u.uid); });
+
+})();
+</script>
+</body>
+</html>
